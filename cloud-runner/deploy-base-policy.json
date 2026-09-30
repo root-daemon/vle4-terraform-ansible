@@ -1,0 +1,33 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadVLE4CloudSourceAndStateBucket",
+      "Effect": "Allow",
+      "Action": ["s3:GetBucketAcl", "s3:GetBucketLocation", "s3:ListBucket"],
+      "Resource": "arn:aws:s3:::vle4-terraform-state-071292884790-us-east-1"
+    },
+    {
+      "Sid": "ReadSourceAndManageStateLock",
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:GetObjectVersion", "s3:PutObject", "s3:DeleteObject"],
+      "Resource": [
+        "arn:aws:s3:::vle4-terraform-state-071292884790-us-east-1/artifacts/vle4-cloud-redo.zip",
+        "arn:aws:s3:::vle4-terraform-state-071292884790-us-east-1/vle4/terraform.tfstate",
+        "arn:aws:s3:::vle4-terraform-state-071292884790-us-east-1/vle4/terraform.tfstate.tflock"
+      ]
+    },
+    {
+      "Sid": "ReadTerraformInfrastructure",
+      "Effect": "Allow",
+      "Action": ["ec2:Describe*", "ssm:GetParameter", "ssm:GetParameters", "sts:GetCallerIdentity"],
+      "Resource": "*"
+    },
+    {
+      "Sid": "WriteVLE4DeployLogs",
+      "Effect": "Allow",
+      "Action": ["logs:CreateLogStream", "logs:DescribeLogStreams", "logs:PutLogEvents"],
+      "Resource": "arn:aws:logs:us-east-1:071292884790:log-group:/aws/codebuild/vle4-terraform-cloud-deploy:*"
+    }
+  ]
+}

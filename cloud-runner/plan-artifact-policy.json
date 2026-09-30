@@ -1,0 +1,17 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ReadVLE4CloudRedoSource",
+      "Effect": "Allow",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::vle4-terraform-state-071292884790-us-east-1/artifacts/vle4-cloud-redo.zip"
+    },
+    {
+      "Sid": "WriteVLE4PlanForScopedPolicyGeneration",
+      "Effect": "Allow",
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::vle4-terraform-state-071292884790-us-east-1/artifacts/plans/vle4-cloud-plan.json"
+    }
+  ]
+}

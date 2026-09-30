@@ -1,0 +1,87 @@
+---
+- name: Configure the VLE 4 EC2 web servers
+  hosts: servers
+  become: true
+  gather_facts: true
+
+  vars:
+    web_container_name: vle4-web
+    web_container_image: nginx:alpine
+    web_root: /opt/vle4/site
+
+  tasks:
+    - name: Install Docker Engine
+      ansible.builtin.dnf:
+        name: docker
+        state: present
+
+    - name: Enable and start Docker
+      ansible.builtin.service:
+        name: docker
+        state: started
+        enabled: true
+
+    - name: Allow ec2-user to use Docker without sudo
+      ansible.builtin.user:
+        name: ec2-user
+        groups: docker
+        append: true
+
+    - name: Create the site directory
+      ansible.builtin.file:
+        path: "{{ web_root }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: Publish a host-specific validation page
+      ansible.builtin.copy:
+        dest: "{{ web_root }}/index.html"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          <!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <title>VLE 4 Deployed</title>
+            <style>
+              body { margin: 0; font-family: Arial, sans-serif; background: #0b1736; color: #ffffff; }
+              main { max-width: 760px; margin: 110px auto; padding: 42px; border-radius: 16px; background: #162a57; }
+              h1 { margin-top: 0; color: #ffffff; }
+              p { font-size: 20px; line-height: 1.6; color: #ffffff; }
+              .status { color: #8ff0a4; font-weight: 700; }
+            </style>
+          </head>
+          <body>
+            <main>
+              <h1>VLE 4 Terraform and Ansible Deployment</h1>
+              <p><span class="status">Configured successfully</span></p>
+              <p>Host: {{ inventory_hostname }}</p>
+              <p>Docker and Nginx were configured by Ansible.</p>
+            </main>
+          </body>
+          </html>
+
+    - name: Check whether the validation container exists
+      ansible.builtin.command: "docker ps -a --format {{ '{{' }}.Names{{ '}}' }}"
+      register: docker_containers
+      changed_when: false
+
+    - name: Run the Nginx validation container
+      ansible.builtin.command: >-
+        docker run -d --name {{ web_container_name }} --restart unless-stopped
+        -p 80:80 -v {{ web_root }}:/usr/share/nginx/html:ro {{ web_container_image }}
+      when: web_container_name not in docker_containers.stdout_lines
+
+    - name: Verify the locally served VLE 4 page
+      ansible.builtin.uri:
+        url: http://127.0.0.1/
+        return_content: true
+        status_code: 200
+      register: local_http
+      retries: 6
+      delay: 5
+      until: local_http.status == 200 and 'VLE 4 Terraform and Ansible Deployment' in local_http.content

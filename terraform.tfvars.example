@@ -1,0 +1,2 @@
+admin_cidr      = "YOUR_PUBLIC_IPV4/32"
+public_key_path = "keys/vle4_lab_ed25519.pub"

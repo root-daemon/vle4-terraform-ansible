@@ -1,0 +1,14 @@
+keys/
+*.zip
+terraform.tfstate
+terraform.tfstate.*
+.terraform/
+.terraform.lock.hcl
+ansible/inventory.ini
+terraform.tfvars
+tfplan
+*.tfplan
+evidence/
+output/
+tmp/
+.DS_Store

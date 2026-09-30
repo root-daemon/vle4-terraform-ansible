@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - set -eu
+      - TERRAFORM_VERSION=1.16.3
+      - curl --fail --silent --show-error --location "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" --output /tmp/terraform.zip
+      - unzip -o /tmp/terraform.zip -d /usr/local/bin
+      - terraform version
+  build:
+    commands:
+      - cd vle4-terraform-ansible
+      - terraform init -input=false
+      - terraform validate
+      - terraform plan -input=false -out=/tmp/vle4-cloud-apply.tfplan
+      - terraform show -json /tmp/vle4-cloud-apply.tfplan | python3 cloud-runner/reject_destructive_plan.py
+      - terraform apply -input=false /tmp/vle4-cloud-apply.tfplan
+      - python3 cloud-runner/configure_web_via_ssm.py

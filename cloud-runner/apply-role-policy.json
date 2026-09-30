@@ -1,0 +1,71 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "CreateAndReadVLE4SSMRole",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateRole",
+        "iam:TagRole",
+        "iam:GetRole",
+        "iam:GetRolePolicy",
+        "iam:AttachRolePolicy",
+        "iam:ListAttachedRolePolicies",
+        "iam:ListRolePolicies",
+        "iam:ListRoleTags",
+        "iam:ListInstanceProfilesForRole"
+      ],
+      "Resource": "arn:aws:iam::071292884790:role/vle4-web-ssm-role"
+    },
+    {
+      "Sid": "CreateAndReadVLE4SSMInstanceProfile",
+      "Effect": "Allow",
+      "Action": [
+        "iam:CreateInstanceProfile",
+        "iam:TagInstanceProfile",
+        "iam:AddRoleToInstanceProfile",
+        "iam:GetInstanceProfile",
+        "iam:ListInstanceProfileTags"
+      ],
+      "Resource": "arn:aws:iam::071292884790:instance-profile/vle4-web-ssm-profile"
+    },
+    {
+      "Sid": "PassOnlyVLE4RoleToEC2",
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "arn:aws:iam::071292884790:role/vle4-web-ssm-role",
+      "Condition": {
+        "StringEquals": { "iam:PassedToService": "ec2.amazonaws.com" }
+      }
+    },
+    {
+      "Sid": "AssociateProfileWithOnlyVLE4Instances",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:AssociateIamInstanceProfile",
+        "ec2:ReplaceIamInstanceProfileAssociation",
+        "ec2:ModifyInstanceAttribute"
+      ],
+      "Resource": [
+        "arn:aws:ec2:us-east-1:071292884790:instance/i-0d25ca0b362fe3d9c",
+        "arn:aws:ec2:us-east-1:071292884790:instance/i-0d96c282551fcd967"
+      ]
+    },
+    {
+      "Sid": "RunAnsibleOnVLE4Instances",
+      "Effect": "Allow",
+      "Action": "ssm:SendCommand",
+      "Resource": [
+        "arn:aws:ssm:us-east-1::document/AWS-RunShellScript",
+        "arn:aws:ec2:us-east-1:071292884790:instance/i-0d25ca0b362fe3d9c",
+        "arn:aws:ec2:us-east-1:071292884790:instance/i-0d96c282551fcd967"
+      ]
+    },
+    {
+      "Sid": "ReadAnsibleCommandResult",
+      "Effect": "Allow",
+      "Action": ["ssm:GetCommandInvocation", "ssm:DescribeInstanceInformation"],
+      "Resource": "*"
+    }
+  ]
+}

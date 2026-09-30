@@ -1,0 +1,19 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - set -eu
+      - TERRAFORM_VERSION=1.16.3
+      - curl --fail --silent --show-error --location "https://releases.hashicorp.com/terraform/${TERRAFORM_VERSION}/terraform_${TERRAFORM_VERSION}_linux_amd64.zip" --output /tmp/terraform.zip
+      - unzip -o /tmp/terraform.zip -d /usr/local/bin
+      - terraform version
+  build:
+    commands:
+      - cd vle4-terraform-ansible
+      - terraform init -input=false
+      - terraform validate
+      - terraform plan -input=false -out=cloud-plan.tfplan
+      - terraform show -no-color cloud-plan.tfplan
+      - terraform show -json cloud-plan.tfplan > /tmp/vle4-cloud-plan.json
+      - aws s3 cp /tmp/vle4-cloud-plan.json s3://vle4-terraform-state-071292884790-us-east-1/artifacts/plans/vle4-cloud-plan.json --sse AES256
